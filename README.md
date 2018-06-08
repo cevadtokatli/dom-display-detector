@@ -1,5 +1,5 @@
 # DOM Display Detector
-DOM Display Detector detects an element if it is displayed on the screen or not and calls the given callback method according to the element’s view status.
+DOM Display Detector detects an element if it is displayed on the screen or not and calls the given callback method according to the element’s view status. <a href="https://cevadtokatli.github.io/dom-display-detector/" target="_blank">Click here to see the demo.</a>
 
 ## NPM
 You can install DOM Display Detector by using npm.
