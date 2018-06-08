@@ -7,7 +7,7 @@ var text = 'DOM DISPLAY DETECTOR',
 DOMDisplayDetector.bind(title, function() {
     writeI = setInterval(write, 100);
 }, function() {
-    clearInterval(write);
+    clearInterval(writeI);
     span[0].innerHTML = '';
     i = 0;
 });
