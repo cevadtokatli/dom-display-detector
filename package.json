@@ -1,6 +1,6 @@
 {
   "name": "dom-display-detector",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "DOM Display Detector detects an element if it is displayed on the screen or not and calls the given callback method according to the element’s view status.",
   "keywords": ["javascript", "display", "scroll"],
   "author": {
