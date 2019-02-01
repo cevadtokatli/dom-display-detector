@@ -1,6 +1,6 @@
 /*!
  *   DOM Display Detector
- *   version: 1.0.2
+ *   version: 1.0.3
  *    author: Cevad Tokatli <cevadtokatli@hotmail.com>
  *   website: http://cevadtokatli.com
  *    github: https://github.com/cevadtokatli/dom-display-detector
@@ -37,9 +37,6 @@
     };
   }();
 
-  var requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || function (callback) {
-      window.setTimeout(callback, 1000 / 60);
-  };
   var elements = [],
       _init = false;
 

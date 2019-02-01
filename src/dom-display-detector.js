@@ -1,7 +1,3 @@
-const requestAnimationFrame = window.requestAnimationFrame ||
-                              window.webkitRequestAnimationFrame ||
-                              window.mozRequestAnimationFrame ||
-                              ((callback) => { window.setTimeout(callback, 1000 / 60); });
 var elements = [],
     init = false;
 
