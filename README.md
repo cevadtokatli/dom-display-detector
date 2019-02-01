@@ -65,3 +65,6 @@ IE 10 is not supported and patches to fix problems will not be accepted.
 
 ## License
 DOM Display Detector is provided under the MIT License.
+
+## Related Projects
+* [DOM Display Detector React](https://github.com/cevadtokatli/dom-display-detector-react)
