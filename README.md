@@ -41,7 +41,7 @@ DOMDisplayDetector.bind(elm, function() {
 ## Methods
 
 ### Bind
-##### ```static void bind(HTMLElement|String elm, Function appearCallback, Function disCallback)```
+##### ```static bind(elm:HTMLElement|String appearCallback:Function, disCallback:Function): void```
 Binds an element or elements to DOM Display Detector. Every time an element appears on the screen, ```appearCallback``` is invoked, when the element disappears on the screen, ```disCallback``` is invoked.
 
 *	**elm:** HTMLElement to be bound. It can be element itself or a CSS selector as a string.
@@ -51,11 +51,11 @@ Binds an element or elements to DOM Display Detector. Every time an element appe
 
 
 ### BindOnce
-##### ```static void bindOnce(HTMLElement|String elm, Function appearCallback, Function disCallback)```
+##### ```static bindOnce(elm:HTMLElement|String appearCallback:Function, disCallback:Function): void```
 The only difference from the ```bind``` method is that callback methods are invoked once and then element unbinds itself.
 
 ### Unbind
-##### ```static void unBind(HTMLElement|String elm)```
+##### ```static unbind(elm:HTMLElement|String): void```
 *	**elm:** HTMLElement to be unbound. It can be element itself or a CSS selector as string.
 
 Unbinds elements. It doesn’t work with elements that are bound with ```bindOnce``` method since they unbind themselves.
