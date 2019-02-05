@@ -1,8 +1,12 @@
 {
   "name": "dom-display-detector",
-  "version": "1.0.3",
+  "version": "2.0.0",
   "description": "DOM Display Detector detects an element if it is displayed on the screen or not and calls the given callback method according to the element’s view status.",
-  "keywords": ["javascript", "display", "scroll"],
+  "keywords": [
+    "javascript",
+    "display",
+    "scroll"
+  ],
   "author": {
     "name": "Cevad Tokatli",
     "email": "cevadtokatli@hotmail.com",
@@ -24,13 +28,13 @@
     "build": "rollup -c && uglifyjs dist/dom-display-detector.js -o dist/dom-display-detector.min.js --comments /dom-display-detector/"
   },
   "devDependencies": {
-    "babel-core": "^6.26.0",
-    "babel-plugin-external-helpers": "^6.22.0",
-    "babel-preset-env": "^1.6.1",
-    "rollup": "^0.58.0",
-    "rollup-plugin-babel": "^3.0.3",
-    "rollup-plugin-commonjs": "9.1.0",
-    "rollup-plugin-node-resolve": "^3.3.0",
-    "uglify-js": "^3.3.21"
+    "@babel/core": "^7.2.2",
+    "@babel/preset-env": "^7.3.1",
+    "babel-loader": "^8.0.5",
+    "rollup": "^1.1.2",
+    "rollup-plugin-babel": "^4.3.2",
+    "rollup-plugin-commonjs": "^9.2.0",
+    "rollup-plugin-node-resolve": "^4.0.0",
+    "uglify-js": "^3.4.9"
   }
 }
