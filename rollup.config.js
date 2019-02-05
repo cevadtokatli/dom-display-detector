@@ -37,11 +37,8 @@ module.exports = {
         nodeResolve(),
         commonjs(),
         babel({
-            plugins: [
-                ['external-helpers']
-            ],
             presets: [
-                ['env', {modules: false}]
+                '@babel/preset-env'
             ]
         })
     ]
