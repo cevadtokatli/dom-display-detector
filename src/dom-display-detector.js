@@ -20,8 +20,6 @@
  * @property {boolean} bindOnce
  * @property {Function} appearCallback
  * @property {Function} disCallback
- * @property {boolean} invokedAppearCallback
- * @property {boolean} invokedDisCallback
  */
 
 const elements = [];
@@ -187,12 +185,10 @@ class DOMDisplayDetector {
             if(!e.seen) {
                 e.seen = true;
 
-                if(e.bindOnce && e.invokedDisCallback) {
+                if(e.bindOnce) {
                     let i = elements.indexOf(e);
                     elements.splice(i, 1);
                 } else {
-                    e.invokedAppearCallback = true;
-
                     if(typeof e.appearCallback == 'function') {
                         e.appearCallback({target:e.elm});
                     }
@@ -202,15 +198,8 @@ class DOMDisplayDetector {
             if(e.seen) {
                 e.seen = false;
 
-                if(e.bindOnce && e.invokedAppearCallback) {
-                    let i = elements.indexOf(e);
-                    elements.splice(i, 1);
-                } else {
-                    e.invokedDisCallback = true;
-
-                    if(typeof e.disCallback == 'function') {
-                        e.disCallback({target:e.elm});
-                    }
+                if(typeof e.disCallback == 'function') {
+                    e.disCallback({target:e.elm});
                 }
             }
         }
