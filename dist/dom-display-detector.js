@@ -35,8 +35,34 @@
     return Constructor;
   }
 
-  var elements = [],
-      _init = false;
+  function _readOnlyError(name) {
+    throw new Error("\"" + name + "\" is read-only");
+  }
+
+  /**
+   * @typedef {Object} ParentValues
+   * @property {number} width
+   * @property {number} height
+   * @property {number} x
+   * @property {number} y
+   */
+
+  /**
+   * @typedef {Object} ChildValues
+   * @property {number} width
+   * @property {number} height
+   * @property {number} left
+   * @property {number} right
+   */
+
+  /**
+   * @typedef {Object} DDPElement
+   * @property {HTMLElement} elm
+   * @property {boolean} bindOnce
+   * @property {Function} appearCallback
+   * @property {Function} disCallback
+   */
+  var elements = [];
 
   var DOMDisplayDetector =
   /*#__PURE__*/
@@ -52,30 +78,18 @@
        * Adds event listeners to window.
        */
       value: function init() {
-        if (!window) {
-          throw new Error('DOM Display Detector needs a window');
+        // dont install if runs on the server.
+        if (typeof window === 'undefined') {
+          return;
         }
 
-        _init = true;
         window.addEventListener('resize', this.detect, true);
         window.addEventListener('scroll', this.detect, true);
       }
       /**
-       *  Removes event listeners from window.
-       *  DOM Display Detector destroys itself when it has no element. When a new element is added, it then initializes itself again.
-       */
-
-    }, {
-      key: "destroy",
-      value: function destroy() {
-        _init = false;
-        window.removeEventListener('resize', this.detect);
-        window.removeEventListener('scroll', this.detect);
-      }
-      /**
        * Binds an element or elements to DOM Display Detector.
        *
-       * @param {HTMLElement|String} elm
+       * @param {HTMLElement|string} elm
        * @param {Function} appearCallback
        * @param {Function} disCallback
        */
@@ -93,7 +107,7 @@
       /**
        * Binds an element or elements to DOM Display Detector for once.
        *
-       * @param {HTMLElement|String} elm
+       * @param {HTMLElement|string} elm
        * @param {Function} appearCallback
        * @param {Function} disCallback
        */
@@ -111,33 +125,29 @@
       /**
        * Unbinds elements. It doesn’t work with elements that have been bound with the bindOnce method since they unbind themselves.
        *
-       * @param {HTMLElement|String} elm
+       * @param {HTMLElement|string} elm
        */
 
     }, {
       key: "unbind",
       value: function unbind(elm) {
         var elms = this.getElement(elm);
-        elements = elements.filter(function (e) {
+        elements = (_readOnlyError("elements"), elements.filter(function (e) {
           if (elms.indexOf(e.elm) > -1 && !e.bindOnce) {
             e.elm.scrollAnimationBound = false;
             return false;
           }
 
           return true;
-        });
-
-        if (_init && elements.length == 0) {
-          this.destroy();
-        }
+        }));
       }
       /**
        * Binds an element to DOM Display Detector if the element has been loaded.
        *
-       * @param {HTMLElement|String} elm
+       * @param {HTMLElement|string} elm
        * @param {Function} appearCallback
        * @param {Function} disCallback
-       * @param {Boolean} bindOnce
+       * @param {boolean} bindOnce
        */
 
     }, {
@@ -146,7 +156,7 @@
         var _this3 = this;
 
         if (!elm.scrollAnimationBound) {
-          var display = window.getComputedStyle(elm, null).getPropertyValue('display');
+          var display = window.getComputedStyle(elm, null).display;
 
           if (display == 'none' || elm.offsetWidth != 0 || elm.offsetHeight != 0) {
             elm.scrollAnimationBound = true;
@@ -160,10 +170,6 @@
             elements.push(e);
             var w = this.getWindowPosition();
             this.isSeen(e, w);
-
-            if (!_init) {
-              this.init();
-            }
           } else {
             // waits for the element to be loaded
             setTimeout(function () {
@@ -175,7 +181,7 @@
       /**
        * Gets elements from a string or from the elements themselves.
        *
-       * @param {HTMLElement|String} elm
+       * @param {HTMLElement|string} elm
        * @returns {HTMLElement[]}
        */
 
@@ -207,8 +213,8 @@
       /**
        * If an element is displayed and invokes the appropriate callback.
        *
-       * @param {Object} e
-       * @param {Object} w
+       * @param {DDPElement} e
+       * @param {ParentValues} w
        */
 
     }, {
@@ -250,16 +256,10 @@
           if (!e.seen) {
             e.seen = true;
 
-            if (e.bindOnce && e.invokedDisCallback) {
+            if (e.bindOnce) {
               var i = elements.indexOf(e);
               elements.splice(i, 1);
-
-              if (_init && elements.length == 0) {
-                this.destroy();
-              }
             } else {
-              e.invokedAppearCallback = true;
-
               if (typeof e.appearCallback == 'function') {
                 e.appearCallback({
                   target: e.elm
@@ -271,21 +271,10 @@
           if (e.seen) {
             e.seen = false;
 
-            if (e.bindOnce && e.invokedAppearCallback) {
-              var i = elements.indexOf(e);
-              elements.splice(i, 1);
-
-              if (_init && elements.length == 0) {
-                this.destroy();
-              }
-            } else {
-              e.invokedDisCallback = true;
-
-              if (typeof e.disCallback == 'function') {
-                e.disCallback({
-                  target: e.elm
-                });
-              }
+            if (typeof e.disCallback == 'function') {
+              e.disCallback({
+                target: e.elm
+              });
             }
           }
         }
@@ -293,9 +282,9 @@
       /**
        * Checks an element if it is seen on the screen.
        * 
-       * @param {Object} p
-       * @param {Object} c
-       * @returns {Boolean}
+       * @param {ParentValues} p
+       * @param {ChildValues} c
+       * @returns {boolean}
        */
 
     }, {
@@ -315,7 +304,7 @@
       /**
        * Returns window's position.
        *
-       * @returns {{width: Number, height: Number, x: Number, y: Number}}
+       * @returns {ParentValues}
        */
 
     }, {
@@ -332,7 +321,7 @@
        * Returns left and top offets of an element.
        *
        * @param  {HTMLElement} elm
-       * @returns {{left: Number, top: Number}}
+       * @returns {{left:number, top:number}}
        */
 
     }, {
@@ -395,6 +384,7 @@
   }();
 
   DOMDisplayDetector.detect = DOMDisplayDetector.detect.bind(DOMDisplayDetector);
+  DOMDisplayDetector.init.call(DOMDisplayDetector);
   var bind = DOMDisplayDetector.bind.bind(DOMDisplayDetector);
   var bindOnce = DOMDisplayDetector.bindOnce.bind(DOMDisplayDetector);
   var unbind = DOMDisplayDetector.unbind.bind(DOMDisplayDetector);
