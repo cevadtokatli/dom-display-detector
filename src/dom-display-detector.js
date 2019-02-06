@@ -24,31 +24,20 @@
  * @property {boolean} invokedDisCallback
  */
 
-var elements = [],
-    init = false;
+const elements = [];
 
 class DOMDisplayDetector {
     /**
      * Adds event listeners to window.
      */
     static init() {
-        if(!window) {
-            throw new Error('DOM Display Detector needs a window');
+        // dont install if runs on the server.
+        if(typeof window === 'undefined') {
+            return;
         }
 
-        init = true;
         window.addEventListener('resize', this.detect, true);
         window.addEventListener('scroll', this.detect, true);
-    }
-
-    /**
-     *  Removes event listeners from window.
-     *  DOM Display Detector destroys itself when it has no element. When a new element is added, it then initializes itself again.
-     */
-    static destroy() {
-        init = false;
-        window.removeEventListener('resize', this.detect);
-        window.removeEventListener('scroll', this.detect);
     }
 
     /**
@@ -59,7 +48,7 @@ class DOMDisplayDetector {
      * @param {Function} disCallback
      */
     static bind(elm, appearCallback, disCallback) {
-        var elms = this.getElement(elm);
+        let elms = this.getElement(elm);
         elms.forEach(e => {
             this.bindElement(e, appearCallback, disCallback, false);
         });
@@ -73,7 +62,7 @@ class DOMDisplayDetector {
      * @param {Function} disCallback
      */
     static bindOnce(elm, appearCallback, disCallback) {
-        var elms = this.getElement(elm);
+        let elms = this.getElement(elm);
         elms.forEach(e => {
             this.bindElement(e, appearCallback, disCallback, true);
         });
@@ -85,7 +74,7 @@ class DOMDisplayDetector {
      * @param {HTMLElement|string} elm
      */
     static unbind(elm) {
-        var elms = this.getElement(elm);
+        let elms = this.getElement(elm);
         elements = elements.filter(e => {
             if(elms.indexOf(e.elm) > -1 && !e.bindOnce) {
                 e.elm.scrollAnimationBound = false;
@@ -94,10 +83,6 @@ class DOMDisplayDetector {
 
             return true;
         });
-
-        if(init && elements.length == 0) {
-            this.destroy();
-        }
     }
 
     /**
@@ -110,10 +95,10 @@ class DOMDisplayDetector {
      */
     static bindElement(elm, appearCallback, disCallback, bindOnce) {
         if(!elm.scrollAnimationBound) {
-            var display = window.getComputedStyle(elm, null).getPropertyValue('display');
+            let display = window.getComputedStyle(elm, null).display;
             if(display == 'none' || elm.offsetWidth != 0 || elm.offsetHeight != 0) {
                 elm.scrollAnimationBound = true;
-                var e = {
+                let e = {
                     elm,
                     appearCallback,
                     disCallback,
@@ -122,12 +107,8 @@ class DOMDisplayDetector {
                 };
 
                 elements.push(e);
-                var w = this.getWindowPosition();
+                let w = this.getWindowPosition();
                 this.isSeen(e, w);
-
-                if(!init) {
-                    this.init();
-                }
             } else {
                 // waits for the element to be loaded
                 setTimeout(() => {
@@ -155,7 +136,7 @@ class DOMDisplayDetector {
      * Checks if elements are displayed or not.
      */
     static detect() {
-        var w = this.getWindowPosition();
+        let w = this.getWindowPosition();
         elements.forEach(e => {
             this.isSeen(e, w);
         });
@@ -207,12 +188,8 @@ class DOMDisplayDetector {
                 e.seen = true;
 
                 if(e.bindOnce && e.invokedDisCallback) {
-                    var i = elements.indexOf(e);
+                    let i = elements.indexOf(e);
                     elements.splice(i, 1);
-
-                    if(init && elements.length == 0) {
-                        this.destroy();
-                    }
                 } else {
                     e.invokedAppearCallback = true;
 
@@ -226,12 +203,8 @@ class DOMDisplayDetector {
                 e.seen = false;
 
                 if(e.bindOnce && e.invokedAppearCallback) {
-                    var i = elements.indexOf(e);
+                    let i = elements.indexOf(e);
                     elements.splice(i, 1);
-
-                    if(init && elements.length == 0) {
-                        this.destroy();
-                    }
                 } else {
                     e.invokedDisCallback = true;
 
@@ -255,7 +228,6 @@ class DOMDisplayDetector {
         //console.log(p.y <= (c.top + c.height)
         //console.log((p.width + p.x) >= c.left)
         //console.log(p.x <= (c.left + c.width))
-
         // top, bottom, left, right
         if(
             (p.height + p.y) >= c.top &&
@@ -290,7 +262,7 @@ class DOMDisplayDetector {
      * @returns {{left:number, top:number}}
      */
     static getOffset(elm) {
-        var left = 0,
+        let left = 0,
             top = 0;
 
         do {
@@ -341,6 +313,7 @@ class DOMDisplayDetector {
 }
 
 DOMDisplayDetector.detect = DOMDisplayDetector.detect.bind(DOMDisplayDetector);
+DOMDisplayDetector.init.call(DOMDisplayDetector);
 
 export const bind = DOMDisplayDetector.bind.bind(DOMDisplayDetector);
 export const bindOnce = DOMDisplayDetector.bindOnce.bind(DOMDisplayDetector);
