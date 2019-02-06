@@ -1,3 +1,29 @@
+/**
+ * @typedef {Object} ParentValues
+ * @property {number} width
+ * @property {number} height
+ * @property {number} x
+ * @property {number} y
+ */
+
+/**
+ * @typedef {Object} ChildValues
+ * @property {number} width
+ * @property {number} height
+ * @property {number} left
+ * @property {number} right
+ */
+
+/**
+ * @typedef {Object} DDPElement
+ * @property {HTMLElement} elm
+ * @property {boolean} bindOnce
+ * @property {Function} appearCallback
+ * @property {Function} disCallback
+ * @property {boolean} invokedAppearCallback
+ * @property {boolean} invokedDisCallback
+ */
+
 var elements = [],
     init = false;
 
@@ -28,7 +54,7 @@ class DOMDisplayDetector {
     /**
      * Binds an element or elements to DOM Display Detector.
      *
-     * @param {HTMLElement|String} elm
+     * @param {HTMLElement|string} elm
      * @param {Function} appearCallback
      * @param {Function} disCallback
      */
@@ -42,7 +68,7 @@ class DOMDisplayDetector {
     /**
      * Binds an element or elements to DOM Display Detector for once.
      *
-     * @param {HTMLElement|String} elm
+     * @param {HTMLElement|string} elm
      * @param {Function} appearCallback
      * @param {Function} disCallback
      */
@@ -56,7 +82,7 @@ class DOMDisplayDetector {
     /**
      * Unbinds elements. It doesn’t work with elements that have been bound with the bindOnce method since they unbind themselves.
      *
-     * @param {HTMLElement|String} elm
+     * @param {HTMLElement|string} elm
      */
     static unbind(elm) {
         var elms = this.getElement(elm);
@@ -77,10 +103,10 @@ class DOMDisplayDetector {
     /**
      * Binds an element to DOM Display Detector if the element has been loaded.
      *
-     * @param {HTMLElement|String} elm
+     * @param {HTMLElement|string} elm
      * @param {Function} appearCallback
      * @param {Function} disCallback
-     * @param {Boolean} bindOnce
+     * @param {boolean} bindOnce
      */
     static bindElement(elm, appearCallback, disCallback, bindOnce) {
         if(!elm.scrollAnimationBound) {
@@ -114,8 +140,8 @@ class DOMDisplayDetector {
     /**
      * Gets elements from a string or from the elements themselves.
      *
-     * @param {HTMLElement|String} elm
-     * @returns {Array}
+     * @param {HTMLElement|string} elm
+     * @returns {HTMLElement[]}
      */
     static getElement(elm) {
         if(typeof elm == 'string') {
@@ -136,21 +162,47 @@ class DOMDisplayDetector {
     }
 
     /**
-     * Checks if an element is displayed and invokes the appropriate callback.
+     * If an element is displayed and invokes the appropriate callback.
      *
-     * @param {Object} e
-     * @param {Object} w
+     * @param {DDPElement} e
+     * @param {ParentValues} w
      */
     static isSeen(e, w) {
-        var elm = e.elm,
-            offset = this.getOffset(elm),
-            width = elm.offsetWidth,
-            height = elm.offsetHeight,
-            left = offset.left,
-            top = offset.top;
+        let seen = false,
+            elm = e.elm,
+            o = this.getOffset(elm),
+            val = {
+                left: o.left,
+                top: o.top,
+                width: elm.offsetWidth,
+                height: elm.offsetHeight
+            };
 
-        // top, bottom, left, right
-        if((w.height + w.y) >= top && w.y <= (top + height) && (w.width + w.x) >= left && w.x <= (left + width)) {
+        while(elm = this.getScrollParent(elm)) {
+            o = this.getOffset(elm);
+            val.left -= o.left;
+            val.top -= o.top;
+            if(this.checkIfSeen(
+                {
+                    x: elm.scrollLeft,
+                    y: elm.scrollTop,
+                    width: elm.offsetWidth,
+                    height: elm.offsetHeight
+                },
+                val
+            )) {                
+                val.left = o.left;
+                val.top = o.top;
+            } else {
+                break;
+            }
+        }
+
+        if(!elm && this.checkIfSeen(w, val)) {
+            seen = true;
+        }
+
+        if(seen) {
             if(!e.seen) {
                 e.seen = true;
 
@@ -192,9 +244,35 @@ class DOMDisplayDetector {
     }
 
     /**
+     * Checks an element if it is seen on the screen.
+     * 
+     * @param {ParentValues} p
+     * @param {ChildValues} c
+     * @returns {boolean}
+     */
+    static checkIfSeen(p, c) {
+        //console.log((p.height + p.y) >= c.top)
+        //console.log(p.y <= (c.top + c.height)
+        //console.log((p.width + p.x) >= c.left)
+        //console.log(p.x <= (c.left + c.width))
+
+        // top, bottom, left, right
+        if(
+            (p.height + p.y) >= c.top &&
+            p.y <= (c.top + c.height) &&
+            (p.width + p.x) >= c.left &&
+            p.x <= (c.left + c.width)
+        ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Returns window's position.
      *
-     * @returns {{width: Number, height: Number, x: Number, y: Number}}
+     * @returns {ParentValues}
      */
     static getWindowPosition() {
         return {
@@ -209,7 +287,7 @@ class DOMDisplayDetector {
      * Returns left and top offets of an element.
      *
      * @param  {HTMLElement} elm
-     * @returns {{left: Number, top: Number}}
+     * @returns {{left:number, top:number}}
      */
     static getOffset(elm) {
         var left = 0,
@@ -231,6 +309,34 @@ class DOMDisplayDetector {
             left,
             top
         };
+    }
+
+    /**
+     * Gets scroll parent of the given element.
+     * 
+     * @param {HTMLElement} elm 
+     * @returns {HTMLElement}
+     */
+    static getScrollParent(elm) {
+        let style = window.getComputedStyle(elm, null),
+            excludeStaticParent = style.position == 'absolute';
+
+        if(style.position == 'fixed') {
+            return null;
+        }
+
+        for(let parent=elm; (parent = parent.parentElement);) {
+            style = window.getComputedStyle(parent, null);
+            if(excludeStaticParent && style.position == 'static') {
+                continue;
+            }
+
+            if(/(auto|scroll|hidden)/.test(style.overflow + style.overflowY + style.overflowX)) {
+                return parent;
+            }
+        }
+
+        return null;
     }
 }
 
