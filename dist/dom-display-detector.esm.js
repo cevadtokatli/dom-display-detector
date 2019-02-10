@@ -39,6 +39,8 @@ function _readOnlyError(name) {
  * @property {number} height
  * @property {number} x
  * @property {number} y
+ * @property {number} right
+ * @property {number} bottom
  */
 
 /**
@@ -46,7 +48,7 @@ function _readOnlyError(name) {
  * @property {number} width
  * @property {number} height
  * @property {number} left
- * @property {number} right
+ * @property {number} top
  */
 
 /**
@@ -205,7 +207,7 @@ function () {
       });
     }
     /**
-     * If an element is displayed and invokes the appropriate callback.
+     * If an element is displayed, invokes the appropriate callback.
      *
      * @param {DDPElement} e
      * @param {ParentValues} w
@@ -214,51 +216,42 @@ function () {
   }, {
     key: "isSeen",
     value: function isSeen(e, w) {
-      var seen = false,
+      var seen = true,
           elm = e.elm,
-          o = this.getOffset(elm),
-          val = {
-        left: o.left,
-        top: o.top,
-        width: elm.offsetWidth,
-        height: elm.offsetHeight
-      };
+          val = this.getOffset(elm),
+          scrollParents = this.getScrollParents(elm);
 
-      while (elm = this.getScrollParent(elm)) {
-        o = this.getOffset(elm);
-        val.left -= o.left;
-        val.top -= o.top;
+      for (var i in scrollParents) {
+        var parent = scrollParents[i],
+            p = this.getOffset(parent),
+            pVal = this.getOffsetValues(parent, p);
 
-        if (this.checkIfSeen({
-          x: elm.scrollLeft,
-          y: elm.scrollTop,
-          width: elm.offsetWidth,
-          height: elm.offsetHeight
-        }, val)) {
-          val.left = o.left;
-          val.top = o.top;
+        if (this.checkIfSeen(pVal, val)) {
+          this.setSeenPart(parent, pVal, val);
         } else {
+          seen = false;
           break;
         }
       }
 
-      if (!elm && this.checkIfSeen(w, val)) {
-        seen = true;
+      if (seen && !this.checkIfSeen(w, val)) {
+        seen = false;
       }
 
       if (seen) {
         if (!e.seen) {
           e.seen = true;
 
+          if (typeof e.appearCallback == 'function') {
+            e.appearCallback({
+              target: e.elm
+            });
+          }
+
           if (e.bindOnce) {
-            var i = elements.indexOf(e);
-            elements.splice(i, 1);
-          } else {
-            if (typeof e.appearCallback == 'function') {
-              e.appearCallback({
-                target: e.elm
-              });
-            }
+            var _i = elements.indexOf(e);
+
+            elements.splice(_i, 1);
           }
         }
       } else {
@@ -284,12 +277,8 @@ function () {
   }, {
     key: "checkIfSeen",
     value: function checkIfSeen(p, c) {
-      //console.log((p.height + p.y) >= c.top)
-      //console.log(p.y <= (c.top + c.height)
-      //console.log((p.width + p.x) >= c.left)
-      //console.log(p.x <= (c.left + c.width))
       // top, bottom, left, right
-      if (p.height + p.y >= c.top && p.y <= c.top + c.height && p.width + p.x >= c.left && p.x <= c.left + c.width) {
+      if (p.bottom >= c.top && p.y <= c.top + c.height && p.right >= c.left && p.x <= c.left + c.width) {
         return true;
       }
 
@@ -304,25 +293,33 @@ function () {
   }, {
     key: "getWindowPosition",
     value: function getWindowPosition() {
+      var width = window.innerWidth,
+          height = window.innerHeight,
+          x = window.pageXOffset,
+          y = window.pageYOffset;
       return {
-        width: window.innerWidth,
-        height: window.innerHeight,
-        x: window.pageXOffset,
-        y: window.pageYOffset
+        width: width,
+        height: height,
+        x: x,
+        y: y,
+        right: width + x,
+        bottom: height + y
       };
     }
     /**
-     * Returns left and top offets of an element.
+     * Returns offets of the given element.
      *
      * @param  {HTMLElement} elm
-     * @returns {{left:number, top:number}}
+     * @returns {ChildValues}
      */
 
   }, {
     key: "getOffset",
     value: function getOffset(elm) {
       var left = 0,
-          top = 0;
+          top = 0,
+          width = elm.offsetWidth,
+          height = elm.offsetHeight;
 
       do {
         if (!isNaN(elm.offsetLeft)) {
@@ -338,20 +335,23 @@ function () {
 
       return {
         left: left,
-        top: top
+        top: top,
+        width: width,
+        height: height
       };
     }
     /**
-     * Gets scroll parent of the given element.
+     * Gets scroll parents of the given element.
      * 
      * @param {HTMLElement} elm 
-     * @returns {HTMLElement}
+     * @returns {HTMLElement[]}
      */
 
   }, {
-    key: "getScrollParent",
-    value: function getScrollParent(elm) {
-      var style = window.getComputedStyle(elm, null),
+    key: "getScrollParents",
+    value: function getScrollParents(elm) {
+      var parents = [],
+          style = window.getComputedStyle(elm, null),
           excludeStaticParent = style.position == 'absolute';
 
       if (style.position == 'fixed') {
@@ -366,11 +366,69 @@ function () {
         }
 
         if (/(auto|scroll|hidden)/.test(style.overflow + style.overflowY + style.overflowX)) {
-          return parent;
+          parents.push(parent);
         }
       }
 
-      return null;
+      return parents;
+    }
+    /**
+     * Returns offset status from the given offset.
+     * 
+     * @param {HTMLElement} el
+     * @param {ChildValues} val
+     * @returns {ParentValues}
+     */
+
+  }, {
+    key: "getOffsetValues",
+    value: function getOffsetValues(el, val) {
+      var width = val.width,
+          height = val.height,
+          x = val.left + el.scrollLeft,
+          y = val.top + el.scrollTop;
+      return {
+        width: width,
+        height: height,
+        x: x,
+        y: y,
+        right: width + x,
+        bottom: height + y
+      };
+    }
+    /**
+     * Sets seen part of the child element.
+     * 
+     * @param {HTMLElement} parent
+     * @param {ParentValues} p
+     * @param {ChildValues} c
+     */
+
+  }, {
+    key: "setSeenPart",
+    value: function setSeenPart(parent, p, c) {
+      var val;
+
+      if ((val = p.x - c.left) > 0) {
+        c.width -= val;
+        c.left -= val;
+      }
+
+      if ((val = c.width + c.left - p.right) > 0) {
+        c.width -= val;
+      }
+
+      if ((val = p.y - c.top) > 0) {
+        c.height -= val;
+        c.top += val;
+      }
+
+      if ((val = c.height + c.top - p.bottom) > 0) {
+        c.height -= val;
+      }
+
+      c.left -= parent.scrollLeft;
+      c.top -= parent.scrollTop;
     }
   }]);
 

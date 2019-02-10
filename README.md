@@ -2,10 +2,13 @@
 DOM Display Detector detects an element if it is displayed on the screen or not and calls the given callback method according to the element’s view status. <a href="https://cevadtokatli.github.io/dom-display-detector/" target="_blank">Click here to see the demo.</a>
 
 ## NPM
-You can install DOM Display Detector by using npm.
-
 ```
 npm install --save-dev dom-display-detector
+```
+
+## Yarn
+```
+yarn add dom-display-detector --dev
 ```
 
 ## Installation
@@ -47,8 +50,6 @@ Binds an element or elements to DOM Display Detector. Every time an element appe
 *	**elm:** HTMLElement to be bound. It can be element itself or a CSS selector as a string.
 *	**appearCallback:** Callback method that is invoked when the specified element appears on the screen.
 *	**disCallback:** Callback method that is invoked when the specified element disappears on the screen.
-
-
 
 ### BindOnce
 ##### ```static bindOnce(elm:HTMLElement|String appearCallback:Function, disCallback:Function): void```
