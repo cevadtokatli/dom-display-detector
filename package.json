@@ -1,39 +1,35 @@
 {
-  "name": "dom-display-detector",
-  "version": "2.0.0",
-  "description": "DOM Display Detector detects an element if it is displayed on the screen or not and calls the given callback method according to the element’s view status.",
+  "name": "@cevad-tokatli/dom-display-detector",
+  "version": "1.0.0",
+  "license": "MIT",
+  "main": "index.js",
+  "description": "DOM Display Detector detects an element if it is displayed on the screen or not and calls the given callback method according to the view status.",
   "keywords": [
     "javascript",
+    "typescript",
+    "dom",
     "display",
     "scroll"
   ],
   "author": {
-    "name": "Cevad Tokatli",
-    "email": "cevadtokatli@hotmail.com",
-    "url": "http://cevadtokatli.com"
+    "name": "Cevad Tokatlı",
+    "email": "cevadtokatli@hotmail.com"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/cevadtokatli/dom-display-detector"
   },
-  "files": [
-    "src",
-    "dist",
-    "rollup.config.js"
-  ],
-  "license": "MIT",
-  "main": "dist/dom-display-detector.min.js",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
-    "dev": "rollup -c -w",
-    "build": "rollup -c && uglifyjs dist/dom-display-detector.js -o dist/dom-display-detector.min.js --comments /dom-display-detector/"
+    "build": "yarn clear && tsc --outDir lib && yarn copy",
+    "clear": "rm -rf lib",
+    "copy": "cp package.json lib/package.json && cp README.md lib/README.md && cp LICENSE lib/LICENSE",
+    "dev": "tsc -w --outDir lib",
+    "release": "cd lib && yarn publish"
   },
   "devDependencies": {
-    "@babel/core": "^7.2.2",
-    "@babel/preset-env": "^7.3.1",
-    "rollup": "^1.1.2",
-    "rollup-plugin-babel": "^4.3.2",
-    "rollup-plugin-commonjs": "^9.2.0",
-    "rollup-plugin-node-resolve": "^4.0.0",
-    "uglify-js": "^3.4.9"
+    "typescript": "4.8.3"
   }
 }

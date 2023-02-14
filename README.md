@@ -1,71 +1,57 @@
 # DOM Display Detector
-DOM Display Detector detects an element if it is displayed on the screen or not and calls the given callback method according to the element’s view status. <a href="https://cevadtokatli.github.io/dom-display-detector/" target="_blank">Click here to see the demo.</a>
 
-## NPM
-```
-npm install --save-dev dom-display-detector
-```
+DOM Display Detector detects an element if it is displayed on the screen or not and calls the given callback method according to the view status.
 
-## Yarn
-```
-yarn add dom-display-detector --dev
-```
+[Click here to see the demo.](https://cevadtokatli.github.io/dom-display-detector)
 
 ## Installation
-You can simply import ```dom-display-detector``` and call the static ```bind``` method to bind an element to DOM Display Detector.
 
-```
-import {bind} from 'dom-display-detector';
+It is available as a package on NPM for use with a module bundler.
 
-const elm = document.querySelector('#elm');
-bind(elm, () => {
-    elm.classList.add('active');
-});
+```sh
+# NPM
+$ npm install --save @cevad-tokatli/dom-display-detector
+
+# Yarn
+$ yarn add @cevad-tokatli/dom-display-detector
 ```
 
-You can also add the script file into your HTML.
-```
-<!DOCTYPE html>
-<html lang="en">
-<head></head>
-<body>
-<div id="elm"></div>
-<script src="/node_modules/dom-display-detector/dist/dom-display-detector.min.js"></script>
-<script>
-var elm = document.querySelector('#elm');
-DOMDisplayDetector.bind(elm, function() {
-    elm.classList.add('active');
-});
-</script>
-</body>
-</html>
+## Usage
+
+You can simply import the module and call `bind` method to bind an element to DOM Display Detector.
+
+```typescript
+import { bind } from '@cevad-tokatli/dom-display-detector'
+
+const el = document.querySelector('#el')
+bind(el, () => {
+    el.classList.add('active')
+})
 ```
 
 ## Methods
 
-### Bind
-##### ```static bind(elm:HTMLElement|String appearCallback:Function, disCallback:Function): void```
-Binds an element or elements to DOM Display Detector. Every time an element appears on the screen, ```appearCallback``` is invoked, when the element disappears on the screen, ```disCallback``` is invoked.
+### bind
 
-*	**elm:** HTMLElement to be bound. It can be element itself or a CSS selector as a string.
-*	**appearCallback:** Callback method that is invoked when the specified element appears on the screen.
-*	**disCallback:** Callback method that is invoked when the specified element disappears on the screen.
+**`bind(el: Element | HTMLElement | string, onShow: (el: HTMLElement, isInitial: boolean) => void, onHide?: (el: HTMLElement, isInitial: boolean) => void): void`**
 
-### BindOnce
-##### ```static bindOnce(elm:HTMLElement|String appearCallback:Function, disCallback:Function): void```
-The only difference from the ```bind``` method is that callback methods are invoked once and then element unbinds itself.
+Binds the given element(s) to DOM Display Detector. Every time the element appears on the screen, calls `onShow` method and when the element disappears on the screen, calls `onHide` method.
 
-### Unbind
-##### ```static unbind(elm:HTMLElement|String): void```
-*	**elm:** HTMLElement to be unbound. It can be element itself or a CSS selector as string.
+As soon as the element is bound, DOM Display Detector directly calls either `onShow` or `onHide` according to the element view status. *(the second argument `isInitial` become `true` in these kinds of calls.)*
 
-Unbinds elements. It doesn’t work with elements that are bound with ```bindOnce``` method since they unbind themselves.
+### bindOnce
 
-## IE Support
-IE 10 is not supported and patches to fix problems will not be accepted.
+**`bindOnce(el: Element | HTMLElement | string, onShow: (el: HTMLElement) => void, onHide?: (el: HTMLElement) => void): void`**
+
+Unbinds the element automatically once the element is shown on the screen.
+
+When the element is bound to DOM Display Detector, checks if the element is shown on the screen, and if it is, directly calls `onShow` method and unbinds the element, however, if the element is hidden, calls `onHide` method and keeps the element bound until it appears on the screen.
+
+### unbind
+
+**`unbind(el: Element | HTMLElement | string): void`**
+
+Unbinds the given element(s).
 
 ## License
-DOM Display Detector is provided under the MIT License.
-
-## Related Projects
-* [DOM Display Detector React](https://github.com/cevadtokatli/dom-display-detector-react)
+DOM Display Detector is provided under the [MIT License](https://opensource.org/licenses/MIT).
